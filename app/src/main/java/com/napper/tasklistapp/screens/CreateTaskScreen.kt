@@ -20,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -49,13 +50,14 @@ import androidx.navigation.compose.rememberNavController
 import com.napper.tasklistapp.R
 import com.napper.tasklistapp.data.State
 import com.napper.tasklistapp.data.Task
+import com.napper.tasklistapp.data.TaskViewModel
 import com.napper.tasklistapp.data.getFakeTasks
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateTaskScreen(navController: NavController) {
+fun CreateTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,13 +72,13 @@ fun CreateTaskScreen(navController: NavController) {
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            MainContent(navController)
+            MainContent(navController, viewModel)
         }
     }
 }
 
 @Composable
-fun MainContent(navController: NavController) {
+fun MainContent(navController: NavController, viewModel: TaskViewModel) {
     var inputTitle by rememberSaveable {
         mutableStateOf("")
     }
@@ -112,8 +114,8 @@ fun MainContent(navController: NavController) {
                 onValueChange = { inputTitle = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 15.dp)
-
+                    .padding(bottom = 15.dp),
+                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp)
             )
 
             Text(
@@ -129,7 +131,8 @@ fun MainContent(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 15.dp),
-                minLines = 5
+                minLines = 5,
+                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp, color = Color.LightGray)
             )
 
             Text(
@@ -174,6 +177,7 @@ fun MainContent(navController: NavController) {
 
             Button(
                 onClick = {
+                    viewModel.addTask(inputTitle, inputDescription, selectedState)
                     Toast.makeText(context, "Task created successfully!!", Toast.LENGTH_SHORT)
                         .show()
                     navController.navigate(Routes.MAIN_SCREEN)
@@ -193,9 +197,9 @@ fun MainContent(navController: NavController) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultUpperPreview() {
-    val navController = rememberNavController()
-    CreateTaskScreen(navController)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultUpperPreview() {
+//    val navController = rememberNavController()
+//    CreateTaskScreen(navController)
+//}
