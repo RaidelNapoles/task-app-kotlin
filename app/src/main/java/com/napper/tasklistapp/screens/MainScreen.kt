@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,10 +45,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.napper.tasklistapp.R
+import com.napper.tasklistapp.data.State
 import com.napper.tasklistapp.data.Task
 import com.napper.tasklistapp.data.TaskViewModel
-import com.napper.tasklistapp.data.getFakeTasks
 import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,10 +61,10 @@ fun MainScreen(navController: NavController, viewModel: TaskViewModel) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
                 ),
                 title = {
-                    Text("Task List")
+                    Text("Lista de tareas", fontWeight = FontWeight.Bold)
                 }
             )
         },
@@ -65,7 +72,7 @@ fun MainScreen(navController: NavController, viewModel: TaskViewModel) {
             FloatingActionButton(onClick = {
                 navController.navigate(Routes.CREATE_TASK_SCREEN)
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+                Icon(Icons.Default.Add, contentDescription = "Agregar")
             }
         }
     ) { innerPadding ->
@@ -79,37 +86,68 @@ fun MainScreen(navController: NavController, viewModel: TaskViewModel) {
 fun BodyContent(viewModel: TaskViewModel) {
     val taskList by viewModel.taskList.observeAsState()
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        taskList?.let {
-            LazyColumn {
-                itemsIndexed(it) { index, item ->
-                    ListItem(item, onDelete = {
-                        viewModel.deleteTask(item.id)
-                    })
+        if (taskList.isNullOrEmpty()) {
+            Text(
+                text = "No hay tareas",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+        } else {
+            taskList?.let {
+                LazyColumn {
+                    itemsIndexed(it) { index, item ->
+                        ListItem(item, onDelete = {
+                            viewModel.deleteTask(item.id)
+                        },
+                            onStateTextClick = {
+                                val currentState = when (item.state) {
+                                    State.PENDING -> State.IN_PROGRESS
+                                    State.IN_PROGRESS -> State.COMPLETED
+                                    State.COMPLETED -> State.COMPLETED
+                                }
+                                viewModel.modifyItem(item.id, currentState)
+                            }
+                        )
+                    }
                 }
             }
-        } ?: Text(
-            text = "No items yet!!",
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
+        }
     }
 }
 
 @Composable
-fun ListItem(item: Task, onDelete: () -> Unit) {
+fun ListItem(item: Task, onDelete: () -> Unit, onStateTextClick: () -> Unit) {
+    val backgroundColor = when (item.state) {
+        State.PENDING -> Color(0xFF2196F3)
+        State.IN_PROGRESS -> Color(0xFFFFC107)
+        State.COMPLETED -> Color(0xFF118315)
+    }
+
+    val state = when (item.state) {
+        State.PENDING -> "Pendiente"
+        State.IN_PROGRESS -> "En curso"
+        State.COMPLETED -> "Finalizada"
+    }
+
+    val pattern = "hh:mm a,  dd/MM"
+    val dateFormatter = DateTimeFormatter.ofPattern(pattern)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(6.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.primary)
+            .background(backgroundColor)
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -117,10 +155,7 @@ fun ListItem(item: Task, onDelete: () -> Unit) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = SimpleDateFormat(
-                        "hh:mm a, dd/MM",
-                        Locale.ENGLISH
-                    ).format(item.createdAt),
+                    text = item.createdAt.format(dateFormatter),
                     color = Color.White,
                     fontSize = 14.sp
                 )
@@ -145,12 +180,15 @@ fun ListItem(item: Task, onDelete: () -> Unit) {
                 .padding(top = 10.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = item.state.toString(),
-                textAlign = TextAlign.Center,
-                color = Color.White,
-                fontStyle = FontStyle.Italic
-            )
+            ClickableText(
+                text = AnnotatedString(
+                    state, spanStyle = SpanStyle(
+                        color = Color.White,
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.Bold
+                    )
+                ),
+                onClick = { onStateTextClick() })
         }
     }
 

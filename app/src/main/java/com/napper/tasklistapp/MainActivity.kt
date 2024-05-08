@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
 import com.napper.tasklistapp.data.TaskViewModel
 import com.napper.tasklistapp.screens.AppNavigation
+import com.napper.tasklistapp.ui.theme.TaskListAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +15,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
         setContent {
-            AppNavigation(taskViewModel)
+            TaskListAppTheme {
+                AppNavigation(taskViewModel)
+            }
         }
     }
 }

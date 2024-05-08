@@ -1,8 +1,7 @@
 package com.napper.tasklistapp.data
 
-import android.app.ActivityManager.TaskDescription
 import java.time.Instant
-import java.util.Date
+import java.time.ZoneId
 
 object TaskManager {
     private val taskList = mutableListOf<Task>()
@@ -18,7 +17,7 @@ object TaskManager {
                 title,
                 description,
                 state,
-                Date.from(Instant.now())
+                Instant.now().atZone(ZoneId.of("America/Havana"))
             )
         )
     }

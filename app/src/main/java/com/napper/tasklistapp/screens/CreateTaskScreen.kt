@@ -51,7 +51,6 @@ import com.napper.tasklistapp.R
 import com.napper.tasklistapp.data.State
 import com.napper.tasklistapp.data.Task
 import com.napper.tasklistapp.data.TaskViewModel
-import com.napper.tasklistapp.data.getFakeTasks
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -63,10 +62,10 @@ fun CreateTaskScreen(navController: NavController, viewModel: TaskViewModel) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
                 ),
                 title = {
-                    Text("Create Task")
+                    Text("Crear tarea", fontWeight = FontWeight.Bold)
                 }
             )
         }
@@ -103,7 +102,7 @@ fun MainContent(navController: NavController, viewModel: TaskViewModel) {
                 .padding(10.dp)
         ) {
             Text(
-                text = "Title:",
+                text = "Título:",
                 fontSize = mainLabelFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.DarkGray,
@@ -119,7 +118,7 @@ fun MainContent(navController: NavController, viewModel: TaskViewModel) {
             )
 
             Text(
-                text = "Description:",
+                text = "Descripción (opcional):",
                 fontSize = mainLabelFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.DarkGray,
@@ -132,43 +131,49 @@ fun MainContent(navController: NavController, viewModel: TaskViewModel) {
                     .fillMaxWidth()
                     .padding(bottom = 15.dp),
                 minLines = 5,
-                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp, color = Color.LightGray)
+                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp, color = Color.DarkGray)
             )
 
             Text(
-                text = "State:",
+                text = "Estado:",
                 fontSize = mainLabelFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color.DarkGray,
             )
+
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
                     checked = selectedState == State.PENDING,
                     onCheckedChange = { selectedState = State.PENDING })
                 Text(
-                    text = "Pending",
+                    text = "Pendiente",
                     fontSize = checkBoxLabelFontSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.DarkGray,
                 )
 
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = selectedState == State.IN_PROGRESS,
                     onCheckedChange = { selectedState = State.IN_PROGRESS })
                 Text(
-                    text = "In Progress",
+                    text = "En curso",
                     fontSize = checkBoxLabelFontSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.DarkGray,
                 )
+            }
 
+            Row(verticalAlignment = Alignment.CenterVertically,) {
                 Checkbox(
                     checked = selectedState == State.COMPLETED,
                     onCheckedChange = { selectedState = State.COMPLETED })
                 Text(
-                    text = "Done",
+                    text = "Finalizada",
                     fontSize = checkBoxLabelFontSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.DarkGray,
@@ -178,16 +183,17 @@ fun MainContent(navController: NavController, viewModel: TaskViewModel) {
             Button(
                 onClick = {
                     viewModel.addTask(inputTitle, inputDescription, selectedState)
-                    Toast.makeText(context, "Task created successfully!!", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, "La tarea se creó exitosamente", Toast.LENGTH_SHORT)
                         .show()
                     navController.navigate(Routes.MAIN_SCREEN)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 15.dp)
+                    .padding(top = 15.dp),
+                enabled = inputTitle.isNotEmpty()
             ) {
                 Text(
-                    text = "Save",
+                    text = "Guardar",
                     fontSize = mainLabelFontSize,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
